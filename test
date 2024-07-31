@@ -45,7 +45,7 @@ local whitelisted = {
 }
 
 local commandsMessage = {
-"Cmds, Say, Bring, to, ExecutorLevel, executor"
+"Cmds, Say, Bring, vrs, gamename, playercount, maxplayers, rejoin,reset, sit, jump"
 
 }
 
@@ -123,7 +123,7 @@ say = {
 			
 			local speakerplayer = game.Players:FindFirstChild(speaker)
 			
-			if not speakerplayer then return end
+			if not speakerplayer thgaen return end
 			
 			 chat(tosay) 
 		end,
