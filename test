@@ -1,7 +1,3 @@
-_G.Owner = "Vertires"
-_G.prefix = "." -- dont set more than 1 character
-_G.allwhitelisted = false
-
 local function unorbit()
 	orbitcon:Disconnect()
 end
