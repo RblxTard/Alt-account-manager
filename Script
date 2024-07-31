@@ -1,0 +1,580 @@
+_G.Owner = "Vertires"
+_G.prefix = "." -- dont set more than 1 character
+_G.allwhitelisted = false
+
+local function unorbit()
+	orbitcon:Disconnect()
+end
+
+local orbitcon
+
+local function orbit(target, speed, radius)
+	local r = tonumber(radius) or 10
+	local rps = tonumber(speed) or math.pi
+	local orbiter = bot.Character.HumanoidRootPart
+	local angle = 0
+	orbitcon = game:GetService("RunService").Heartbeat:Connect(function(dt)
+		if not target.Character then return end
+		origin = target.Character.HumanoidRootPart.CFrame
+		angle = (angle + dt * rps) % (2 * math.pi)
+		orbiter.CFrame = origin * CFrame.new(math.cos(angle) * r, 0, math.sin(angle) * r)
+	end)
+end
+
+local function searchPlayers(query)
+	query = string.lower(query)
+	
+	for i, player in pairs(game.Players:GetPlayers()) do
+		if string.find(string.lower(player.DisplayName), query) or string.find(string.lower(player.Name), query) then
+			return player
+		end
+	end
+	
+	return nil
+end
+
+bot = game.Players.LocalPlayer
+
+local gameData = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
+local messageReceived = game.TextChatService.TextChannels.RBXGeneral.MessageReceived
+
+local disconnected = false
+
+local prefix = _G.prefix
+local allwhitelisted =  _G.allwhitelisted
+local status = nil
+
+local whitelisted = {
+    _G.Owner
+}
+
+local commandsMessage = {
+"Cmds, Say, Bring, to, ExecutorLevel, executor"
+
+}
+
+local function chat(msg)
+		game.TextChatService.TextChannels.RBXGeneral:SendAsync(msg)
+
+end
+
+local function loaded()
+chat("Private Alt Control Script By Vertires Has Loaded")
+wait(0.2)
+chat("The main account is: ".. _G.Owner)
+end
+
+
+
+
+local commands = {
+
+cmds = {
+		Name = "cmds",
+		Aliases = {"commands"},
+		Use = "Lists all commands!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			task.spawn(function()
+				for i, cmd in pairs(commandsMessage) do
+					chat(cmd)
+					wait(0.5)
+				end
+			end)
+		end,
+	}, 
+
+version = {
+		Name = "Version",
+		Aliases = {"vrs"},
+		Use = "Says the current version",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+		chat("Alt control Script V1.0.0 Made by Vertires. This script is private")
+		end,
+	}, 
+
+
+bring = {
+		Name = "bring",
+		Aliases = {},
+		Use = "Brings bot to the player that chatted the command.",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			pcall(function()
+				local plr = game.Players:FindFirstChild(speaker)
+			
+				if plr then
+					bot.Character:SetPrimaryPartCFrame(plr.Character.HumanoidRootPart.CFrame)
+				end
+			end)
+		end,
+	},
+
+say = {
+		Name = "say",
+		Aliases = {"chat"},
+		Use = "Says the <message> in chat!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			local tosay
+			
+			if args[1] == "say" then
+				tosay = string.sub(msg, 6)
+			else
+				tosay = string.sub(msg, 8)
+			end
+			
+			local speakerplayer = game.Players:FindFirstChild(speaker)
+			
+			if not speakerplayer then return end
+			
+			 chat(tosay) 
+		end,
+	},
+
+ to = {
+		Name = "to",
+		Aliases = {},
+		Use = "Brings Bot to the player you specified",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			pcall(function()
+				local plr = game.Players:FindFirstChild(args[1])
+			
+				if plr then
+					bot.Character:SetPrimaryPartCFrame(plr.Character.HumanoidRootPart.CFrame)
+				end
+			end)
+		end,
+	},
+
+executor = {
+		Name = "executor",
+		Aliases = {"identifyexecutor", "getexec", "exec"},
+		Use = "Gives you the executor that is running LunarBot!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			chat("Executor: " .. identifyexecutor() or "Unknown")
+		end,
+	},
+
+    gamename = {
+		Name = "gamename",
+		Aliases = {"gn"},
+		Use = "Chats the current game's name!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			chat(gameData.Name)
+		end,
+	},
+	playercount = {
+		Name = "playercount",
+		Aliases = {"plrcount"},
+		Use = "Chats the current amount of players!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			chat(tostring(#game.Players:GetPlayers()))
+		end,
+	},
+	maxplayers = {
+		Name = "maxplayers",
+		Aliases = {"maxplrs"},
+		Use = "Chats the current server's maximum player count!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			chat(tostring(game.Players.MaxPlayers))
+		end,
+	},
+
+    reset = {
+		Name = "reset",
+		Aliases = {"re"},
+		Use = "Respawns the bot!!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			local hum = bot.Character:FindFirstChildWhichIsA("Humanoid")
+			
+			if hum then
+				hum.Health = 0
+			end
+		end,
+	},
+	rejoin = {
+		Name = "rejoin",
+		Aliases = {"rj"},
+		Use = "Rejoins the bot!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			if speaker ~= bot.Name and altctrl == false then chat("Invalid permissions to rejoin.") return end
+		
+			if #game.Players:GetPlayers() <= 1 then
+				print("Rejoining (NEW SERVER)")
+				game.Players.LocalPlayer:Kick("\nVertires Alt acc  - Rejoining...")
+				wait()
+				game:GetService('TeleportService'):Teleport(game.PlaceId, game.Players.LocalPlayer)
+			else
+				print("Vertires Alt acc  is rejoining...")
+				game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, game.JobId, game.Players.LocalPlayer)
+			end
+		end,
+	},
+
+    ping = {
+		Name = "ping",
+		Aliases = {"getping"},
+		Use = "Chats LunarBot's ping!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			chat("Ping: " .. tostring(math.floor(game:GetService("Stats").PerformanceStats.Ping:GetValue() + 0.5)) .. " ms")
+		end,
+	},
+
+    unfollow = {
+		Name = "unfollow",
+		Aliases = {"unfollowplr"},
+		Use = "unfollows! ",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			pcall(function()
+				task.spawn(function()
+					followplr = nil
+					wait()
+					bot.Character.Humanoid:MoveTo(bot.Character.HumanoidRootPart.Position)
+				end)
+			end)
+		end,
+	},
+	follow = {
+		Name = "follow",
+		Aliases = {"followplr"},
+		Use = "Makes bot follow you or the given player!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			local plr
+			
+			if args[2] then
+				if args[2] == "random" then
+					local players = game.Players:GetPlayers()
+					
+					plr = players[math.random(1, #players)]
+				else
+					local searched = searchPlayers(args[2])
+				
+					if searched ~= nil then
+						plr = searched
+					else
+						chat("Player not found....")
+						return
+					end
+				end
+			else
+				plr = game.Players:FindFirstChild(speaker)
+			end
+			
+			followplr = plr
+		end,
+	},
+
+pick = {
+		Name = "pick",
+		Aliases = {"choose"},
+		Use = "Picks an item from the given arguments.",
+		Enabled = true,
+		CommandFunction = function(msg, args)
+			local choosefrom = {}
+		
+			for i, opt in pairs(args) do
+				if i >= 2 then
+					table.insert(choosefrom, opt)
+				end
+			end
+			
+			local chosen = choosefrom[math.random(1, #choosefrom)]
+			
+			if chosen then
+				chat("LunarBot chose: " .. chosen)
+			end
+		end,
+	},
+	dance = {
+		Name = "dance",
+		Aliases = {},
+		Use = "Makes LunarBot dance!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			game:GetService("Players"):Chat("/e dance")
+		end,
+	},
+	point = {
+		Name = "point",
+		Aliases = {},
+		Use = "Makes LunarBot point!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			game:GetService("Players"):Chat("/e point")
+		end,
+	},
+	stadium = {
+		Name = "stadium",
+		Aliases = {},
+		Use = "Makes LunarBot do the stadium emote!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			game:GetService("Players"):Chat("/e stadium")
+		end,
+	},
+	cheer = {
+		Name = "cheer",
+		Aliases = {},
+		Use = "Makes LunarBot cheer!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			game:GetService("Players"):Chat("/e cheer")
+		end,
+	},
+	wave = {
+		Name = "wave",
+		Aliases = {},
+		Use = "Makes LunarBot wave!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			game:GetService("Players"):Chat("/e wave")
+		end,
+	},
+	sit = {
+		Name = "sit",
+		Aliases = {},
+		Use = "Makes LunarBot sit!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			bot.Character.Humanoid.Sit = true
+		end,
+	},
+	salute = {
+		Name = "salute",
+		Aliases = {},
+		Use = "Makes LunarBot salute!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			game.Players:Chat("/e salute")
+		end,
+	},
+	jump = {
+		Name = "jump",
+		Aliases = {},
+		Use = "Makes LunarBot jump!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			bot.Character.Humanoid.Jump = true
+		end,
+	},
+	announce = {
+		Name = "announce",
+		Aliases = {},
+		Use = "Makes an announcement via chat, a owner-only command!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			if speaker ~= bot.Name then return end
+		
+			chat("-- ANNOUNCEMENT -- ")
+			wait()
+			chat(string.sub(msg, 10))
+			wait()
+			chat("-- ANNOUNCEMENT --")
+		end,
+	},
+	whitelist = {
+		Name = "whitelist",
+		Aliases = {"wl"},
+		Use = "Whitelists a player, meaning they can use LunarBot. An owner-only command!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			local towhitelist = args[2]
+			
+			if speaker ~= bot.Name then return end
+			
+			if towhitelist then
+				if towhitelist == "all" then
+					for i, player in pairs(game.Players:GetPlayers()) do
+						table.insert(whitelisted, player.Name)
+						local bl = player:FindFirstChild("LunarBotBlacklist")
+						if bl then bl:Destroy() else warn(player.DisplayName .. " was not blacklisted!") end
+					end
+					
+					allwhitelisted = true
+					
+					chat("Whitelisted all players that are currently in the game! Type .cmds to view commands.")
+				else
+					local plr = searchPlayers(towhitelist)
+					
+					if plr then
+						table.insert(whitelisted, plr.Name)
+						local bl = plr:FindFirstChild("LunarBotBlacklist")
+						if bl then bl:Destroy() else warn(player.DisplayName .. " was not blacklisted!") end
+						chat("Whitelisted " .. plr.DisplayName .. "! Type .cmds to view commands.")
+					else
+						chat("Failed to whitelist player - User not found!")
+					end
+				end
+			end
+		end,
+	},
+	blacklist = {
+		Name = "blacklist",
+		Aliases = {"bl"},
+		Use = "Blacklists a player meaning they cannot use the bot. Owner-only command!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			local toblacklist = args[2]
+			
+			if speaker ~= bot.Name then return end
+			
+			if toblacklist then
+				if toblacklist == "all" then
+					for i, p in pairs(game.Players:GetPlayers()) do
+						local alrbl = p:FindFirstChild("LunarBotBlacklist")
+						
+						if alrbl then alrbl:Destroy() end
+					
+						local new = Instance.new("BoolValue")
+						new.Parent = p
+						new.Name = "BotBlacklist"
+						new.Value = true
+					end
+					
+					allwhitelisted = false
+					
+					chat("Blacklisted all players that are currently in the game! They can no longer run commands.")
+				else
+					local plr = searchPlayers(toblacklist)
+					
+					if plr then
+						local alrbl = plr:FindFirstChild("LunarBotBlacklist")
+						
+						if alrbl then alrbl:Destroy() end
+					
+						local new = Instance.new("BoolValue")
+						new.Parent = plr
+						new.Name = "LunarBotBlacklist"
+						new.Value = true
+						allwhitelisted = false
+						chat("Blacklisted " .. plr.DisplayName .. "! They can no longer run commands.")
+					else
+						chat("Failed to blacklist player - User not found!")
+					end
+				end
+			end
+		end,
+	},
+
+	orbit = {
+		Name = "orbit",
+		Aliases = {"orbit"},
+		Use = "Orbits the bot around you!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			pcall(function()
+				local player = game.Players:FindFirstChild(speaker)
+				
+				if not player then return end
+			
+				orbit(player, args[2], args[3])
+			end)
+		end,
+	},
+	unorbit = {
+		Name = "unorbit",
+		Aliases = {"unorbit"},
+		Use = "Halts the orbit!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			pcall(function()
+				unorbit()
+			end)
+		end,
+	},
+}
+
+local function checkCommands(cmd)
+	for i, cmds in pairs(commands) do
+		if cmds == cmd or table.find(cmds.Aliases, cmd) or cmds.Name == cmd then
+			return cmds	
+		end
+	end
+	
+	return nil
+end
+
+local cmdcon = messageReceived:Connect(function(data)
+	local message = data.Text
+	
+	local speakerplayer = game.Players:GetPlayerByUserId(data.TextSource.UserId)
+    local speaker = speakerplayer.Name
+	
+	if not speakerplayer then return end
+
+	local msg = string.lower(message)
+	
+	if string.sub(msg, 1, 1) == prefix then
+		if speakerplayer:FindFirstChild("BotBlacklist") then
+			return
+		end
+
+		if not table.find(whitelisted, speaker) and allwhitelisted == false then
+			return
+		end
+		
+
+	
+		msg = string.sub(msg, 2)
+		
+		local args = string.split(msg, " ")
+		
+		local cmd = checkCommands(args[1])
+		
+		if status ~= nil and speaker ~= bot.Name then
+			chat("Private Status // " .. status .. " // Commands are disabled.")
+			return
+		end
+		
+		if cmd ~= nil then
+			if cmd.Enabled == false then
+				chat("The command " .. cmd.Name .. " is currently disabled. Please request it to be re-enabled by " .. bot.DisplayName .. ".")
+				print("Private CMDLogs // " .. speaker .. " attempted to run command: " .. cmd.Name .. " with arguments: " .. tts(args) .. "while the command was disabled.")
+				return
+			else
+				cmd.CommandFunction(message, args, speaker)
+				
+				local function tts(t)
+					local r = ""
+					
+					for i, v in pairs(t) do
+						r = r .. v .. ", "
+					end
+					
+					return r
+				end
+				
+				print("Private CMDLogs // " .. speaker .. " ran command: " .. cmd.Name .. " with arguments: " .. tts(args))
+			end
+		else
+			warn("Could not find command: " .. args[1] .. "!")
+		end
+	
+	end
+end)
+
+loaded()
+
+task.spawn(function()
+	while wait() do
+		if followplr and disconnected == false then
+			local hum = bot.Character.Humanoid
+			
+			if hum then
+				hum:MoveTo(followplr.Character.HumanoidRootPart.Position)		
+			end
+		end
+	end
+end)
