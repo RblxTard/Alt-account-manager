@@ -1,4 +1,21 @@
+local function unorbit()
+	orbitcon:Disconnect()
+end
 
+local orbitcon
+
+local function orbit(target, speed, radius)
+	local r = tonumber(radius) or 10
+	local rps = tonumber(speed) or math.pi
+	local orbiter = bot.Character.HumanoidRootPart
+	local angle = 0
+	orbitcon = game:GetService("RunService").Heartbeat:Connect(function(dt)
+		if not target.Character then return end
+		origin = target.Character.HumanoidRootPart.CFrame
+		angle = (angle + dt * rps) % (2 * math.pi)
+		orbiter.CFrame = origin * CFrame.new(math.cos(angle) * r, 0, math.sin(angle) * r)
+	end)
+end
 
 local function searchPlayers(query)
 	query = string.lower(query)
@@ -363,10 +380,36 @@ pick = {
 			chat("-- ANNOUNCEMENT --")
 		end,
 	},
+
+spin = {
+		Name = "spin",
+		Aliases = {},
+		Use = "Spins the bot",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+   -- Start spinning with speed
+            local speed = tonumber(args[1]) or 1
+            speed = math.clamp(speed, 1, 500) -- Clamp value to range 1-10
+            spinSpeed = speed * 0.01 -- Adjust multiplier to control speed
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local humanoidRootPart = LocalPlayer.Character.HumanoidRootPart
+                if not spinning then
+                    spinning = true
+                    spinConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                        if spinning then
+                            humanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.Angles(0, math.rad(10 * spinSpeed), 0)
+                        end
+                    end)
+chat("WOOOO IM SPINNING AT "..speed.." SPEED!")
+                end
+            end
+		end,
+	},
+
 	whitelist = {
 		Name = "whitelist",
 		Aliases = {"wl"},
-		Use = "Whitelists a player, meaning they can use LunarBot. An owner-only command!",
+		Use = "Whitelists a player, meaning they can use Bot. An owner-only command!",
 		Enabled = true,
 		CommandFunction = function(msg, args, speaker)
 			local towhitelist = args[2]
@@ -444,6 +487,33 @@ pick = {
 					end
 				end
 			end
+		end,
+	},
+
+	orbit = {
+		Name = "orbit",
+		Aliases = {"orbit"},
+		Use = "Orbits the bot around you!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			pcall(function()
+				local player = game.Players:FindFirstChild(speaker)
+				
+				if not player then return end
+			
+				orbit(player, args[2], args[3])
+			end)
+		end,
+	},
+	unorbit = {
+		Name = "unorbit",
+		Aliases = {"unorbit"},
+		Use = "Halts the orbit!",
+		Enabled = true,
+		CommandFunction = function(msg, args, speaker)
+			pcall(function()
+				unorbit()
+			end)
 		end,
 	},
 }
