@@ -106,7 +106,7 @@ say = {
 			
 			local speakerplayer = game.Players:FindFirstChild(speaker)
 			
-			if not speakerplayer thgaen return end
+			if not speakerplayer then return end
 			
 			 chat(tosay) 
 		end,
