@@ -1,21 +1,4 @@
-local function unorbit()
-	orbitcon:Disconnect()
-end
 
-local orbitcon
-
-local function orbit(target, speed, radius)
-	local r = tonumber(radius) or 10
-	local rps = tonumber(speed) or math.pi
-	local orbiter = bot.Character.HumanoidRootPart
-	local angle = 0
-	orbitcon = game:GetService("RunService").Heartbeat:Connect(function(dt)
-		if not target.Character then return end
-		origin = target.Character.HumanoidRootPart.CFrame
-		angle = (angle + dt * rps) % (2 * math.pi)
-		orbiter.CFrame = origin * CFrame.new(math.cos(angle) * r, 0, math.sin(angle) * r)
-	end)
-end
 
 local function searchPlayers(query)
 	query = string.lower(query)
@@ -461,33 +444,6 @@ pick = {
 					end
 				end
 			end
-		end,
-	},
-
-	orbit = {
-		Name = "orbit",
-		Aliases = {"orbit"},
-		Use = "Orbits the bot around you!",
-		Enabled = true,
-		CommandFunction = function(msg, args, speaker)
-			pcall(function()
-				local player = game.Players:FindFirstChild(speaker)
-				
-				if not player then return end
-			
-				orbit(player, args[2], args[3])
-			end)
-		end,
-	},
-	unorbit = {
-		Name = "unorbit",
-		Aliases = {"unorbit"},
-		Use = "Halts the orbit!",
-		Enabled = true,
-		CommandFunction = function(msg, args, speaker)
-			pcall(function()
-				unorbit()
-			end)
 		end,
 	},
 }
